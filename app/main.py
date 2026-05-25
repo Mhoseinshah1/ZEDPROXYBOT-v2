@@ -5,5 +5,5 @@ app = FastAPI(title=settings.APP_NAME)
 
 
 @app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+async def health() -> dict[str, bool]:
+    return {"ok": True}

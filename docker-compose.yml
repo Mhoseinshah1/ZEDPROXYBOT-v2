@@ -11,7 +11,7 @@ services:
 
   bot:
     build: .
-    command: python -m bot.main
+    command: python -m app.bot.app
     env_file: .env
     depends_on:
       - db

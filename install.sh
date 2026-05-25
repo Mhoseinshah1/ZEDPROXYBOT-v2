@@ -112,6 +112,22 @@ require_compose_file() {
   fi
 }
 
+verify_required_project_layout() {
+  local missing=0
+
+  for p in docker-compose.yml app/main.py app/bot app/db app/models; do
+    if [[ ! -e "$INSTALL_DIR/$p" ]]; then
+      missing=1
+      break
+    fi
+  done
+
+  if [[ "$missing" -eq 1 ]]; then
+    err "Installed repository is incomplete. Required app/bot or app/db directory is missing."
+    exit 1
+  fi
+}
+
 validate_token() {
   local token="$1"
   local resp
@@ -176,6 +192,7 @@ health_check() {
 run_migrations_and_seed() {
   enter_install_dir
   require_compose_file
+  verify_required_project_layout
 
   local cc
   cc="$(compose_cmd)"
@@ -189,6 +206,7 @@ install_bot() {
   install_docker_if_needed
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   if [[ -f "$INSTALL_DIR/.env" ]]; then
@@ -205,6 +223,7 @@ install_bot() {
     read -r -p "Domain (optional): " DOMAIN
     read -r -p "Enable SSL? (yes/no): " ENABLE_SSL
     read -r -p "Report group chat ID (optional): " REPORT_GROUP_CHAT_ID
+
     read -r -p "Database name [zedproxy]: " DB_NAME
     DB_NAME=${DB_NAME:-zedproxy}
 
@@ -253,6 +272,7 @@ install_bot() {
 backup_database() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   local cc
@@ -281,6 +301,7 @@ backup_database() {
 restore_database() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   local cc
@@ -322,6 +343,7 @@ update_bot() {
   install_docker_if_needed
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   local cc
@@ -345,6 +367,7 @@ update_bot() {
 uninstall_bot() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   local cc
@@ -370,6 +393,7 @@ uninstall_bot() {
 restart_services() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   $(compose_cmd) restart app bot
@@ -378,6 +402,7 @@ restart_services() {
 show_status() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   $(compose_cmd) ps
@@ -386,6 +411,7 @@ show_status() {
 show_bot_logs() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   $(compose_cmd) logs -f bot
@@ -394,6 +420,7 @@ show_bot_logs() {
 show_app_logs() {
   ensure_repo_present
   require_compose_file
+  verify_required_project_layout
   enter_install_dir
 
   $(compose_cmd) logs -f app
